@@ -1,0 +1,48 @@
+{
+  "manifest_version": 3,
+  "name": "Markdown Viewer",
+  "version": "1.1.0",
+  "description": "表示中のテキストを Markdown としてレンダリング表示します。ツールバーのボタンで任意のページにも適用できます。",
+  "permissions": [
+    "scripting",
+    "activeTab",
+    "storage",
+    "declarativeNetRequestWithHostAccess"
+  ],
+  "host_permissions": ["*://*/*"],
+  "declarative_net_request": {
+    "rule_resources": [
+      {
+        "id": "md_charset",
+        "enabled": true,
+        "path": "rules.json"
+      }
+    ]
+  },
+  "action": {
+    "default_title": "Markdown として表示"
+  },
+  "options_ui": {
+    "page": "options.html",
+    "open_in_tab": false
+  },
+  "background": {
+    "service_worker": "background.js"
+  },
+  "content_scripts": [
+    {
+      "matches": [
+        "file:///*.md",
+        "file:///*.markdown",
+        "file:///*.mdown",
+        "file:///*.mkd",
+        "file:///*.mkdn",
+        "file:///*.mdtext",
+        "file:///*.text"
+      ],
+      "js": ["markdown.js", "content.js"],
+      "css": ["style.css"],
+      "run_at": "document_idle"
+    }
+  ]
+}
