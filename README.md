@@ -7,7 +7,7 @@
 - **ローカルファイルの自動描画**: `file://` で開いた `.md` / `.markdown` / `.mdown` / `.mkd` / `.mkdn` / `.mdtext` / `.text` を自動で Markdown 描画に切り替え
 - **任意ページへの手動適用**: ツールバーのボタンをクリックすると、現在のタブの表示内容を Markdown として描画（`activeTab` 権限で、クリックしたタブにのみ一時的にアクセス）
 - **Raw / Rendered 切替**: 描画結果と元テキストをボタンで切り替え表示
-- **文字化け対策（UTF-8 解釈）**: `http(s)` は `declarativeNetRequest` で `.md` 系ページの Content-Type に `charset=utf-8` を付与。`file://` は元データを取得し直して UTF-8 でデコード。設定画面で ON / OFF を切替可能（既定 ON）
+- **文字化け対策（UTF-8 解釈）**: 生テキスト表示（`document.contentType` が `text/plain`）のとき、元データを取得し直して UTF-8 でデコード。設定画面で ON / OFF を切替可能（既定 ON）。`text/html` を返すページ（GitHub の Markdown 表示など）は生テキストとみなさず、Content-Type の書き換えも行わない
 - **ダークモード対応**: OS の配色設定に追従
 
 ## 対応 Markdown 記法
@@ -30,11 +30,10 @@
 
 ## 構成
 
-- **manifest.json**: Manifest V3 設定（権限: `scripting` / `activeTab` / `storage` / `declarativeNetRequestWithHostAccess`）
-- **background.js**: Service Worker。ツールバーボタンのクリック処理と UTF-8 矯正ルールセットの有効/無効切替
+- **manifest.json**: Manifest V3 設定（権限: `scripting` / `activeTab` / `storage`）
+- **background.js**: Service Worker。ツールバーボタンのクリック処理（`document.contentType` で生テキスト判定して注入）
 - **content.js**: 描画ロジック本体。テキストの Markdown 描画・ページ差し替え・Raw/Rendered 切替
 - **markdown.js**: 依存なしの軽量 Markdown パーサ（`renderMarkdown(src)` を公開）
-- **rules.json**: `.md` 系ページの Content-Type に `charset=utf-8` を付与する `declarativeNetRequest` ルール
 - **options.html / options.js**: 設定画面（UTF-8 解釈の ON / OFF、`chrome.storage.sync` で永続化）
 - **style.css**: 描画結果のスタイル（GitHub 風 / ダークモード対応）
 

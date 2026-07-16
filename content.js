@@ -36,13 +36,9 @@
     }
 
     let text = fallbackText;
-    // http(s) は DNR で Content-Type を UTF-8 に矯正済みなので表示テキストがそのまま正しい。
-    // file:// は DNR 対象外なので、UTF-8 解釈 ON のときはバイト列を読み直す。
-    if (
-      canRefetch &&
-      location.protocol === "file:" &&
-      (await isUtf8Enabled())
-    ) {
+    // 生テキスト表示(canRefetch)かつ UTF-8 解釈 ON のときは、
+    // バイト列を読み直して UTF-8 でデコードし文字化けを防ぐ（file:// / http(s) 共通）。
+    if (canRefetch && (await isUtf8Enabled())) {
       try {
         text = await decodeAsUtf8();
       } catch (e) {

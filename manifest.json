@@ -3,22 +3,8 @@
   "name": "Markdown Viewer",
   "version": "1.1.0",
   "description": "表示中のテキストを Markdown としてレンダリング表示します。ツールバーのボタンで任意のページにも適用できます。",
-  "permissions": [
-    "scripting",
-    "activeTab",
-    "storage",
-    "declarativeNetRequestWithHostAccess"
-  ],
+  "permissions": ["scripting", "activeTab", "storage"],
   "host_permissions": ["*://*/*"],
-  "declarative_net_request": {
-    "rule_resources": [
-      {
-        "id": "md_charset",
-        "enabled": true,
-        "path": "rules.json"
-      }
-    ]
-  },
   "action": {
     "default_title": "Markdown として表示"
   },
