@@ -53,6 +53,18 @@
   function applyView(rawText) {
     if (!rawText || rawText.trim() === "") return;
 
+    // オリジナルの body を一度だけ退避する。
+    // innerHTML 文字列ではなく子ノードごと動かすことで、元ページの見た目・機能を保つ。
+    let original = window.__mdViewerOriginal;
+    if (!original) {
+      original = document.createElement("div");
+      original.className = "md-viewer-original";
+      while (document.body.firstChild) {
+        original.appendChild(document.body.firstChild);
+      }
+      window.__mdViewerOriginal = original;
+    }
+
     const renderedHtml = window.renderMarkdown(rawText);
 
     const container = document.createElement("article");
@@ -62,39 +74,49 @@
     const rawPre = document.createElement("pre");
     rawPre.className = "md-viewer-raw";
     rawPre.textContent = rawText;
-    rawPre.style.display = "none";
 
-    // Raw / Rendered を両方並べたセグメント切替
+    // Rendered / Raw / 閉じる を並べたセグメント切替
     const switcher = document.createElement("div");
     switcher.className = "md-viewer-switch";
 
-    const rawBtn = document.createElement("button");
-    rawBtn.type = "button";
-    rawBtn.className = "md-viewer-switch-btn";
-    rawBtn.textContent = "Raw";
-
-    const renderedBtn = document.createElement("button");
-    renderedBtn.type = "button";
-    renderedBtn.className = "md-viewer-switch-btn is-active";
-    renderedBtn.textContent = "Rendered";
-
-    function show(raw) {
-      container.style.display = raw ? "none" : "";
-      rawPre.style.display = raw ? "" : "none";
-      rawBtn.classList.toggle("is-active", raw);
-      renderedBtn.classList.toggle("is-active", !raw);
+    function makeBtn(label, active) {
+      const b = document.createElement("button");
+      b.type = "button";
+      b.className = "md-viewer-switch-btn" + (active ? " is-active" : "");
+      b.textContent = label;
+      return b;
     }
-    rawBtn.addEventListener("click", () => show(true));
-    renderedBtn.addEventListener("click", () => show(false));
 
-    switcher.appendChild(rawBtn);
+    const renderedBtn = makeBtn("Rendered", true);
+    const rawBtn = makeBtn("Raw", false);
+    const originalBtn = makeBtn("閉じる", false);
+
+    function show(mode) {
+      container.style.display = mode === "rendered" ? "" : "none";
+      rawPre.style.display = mode === "raw" ? "" : "none";
+      original.style.display = mode === "original" ? "" : "none";
+      // 閉じる（元の状態）を選んだらセレクタを隠す（再表示は拡張アイコンの再クリックで）
+      switcher.style.display = mode === "original" ? "none" : "";
+      renderedBtn.classList.toggle("is-active", mode === "rendered");
+      rawBtn.classList.toggle("is-active", mode === "raw");
+      originalBtn.classList.toggle("is-active", mode === "original");
+    }
+    renderedBtn.addEventListener("click", () => show("rendered"));
+    rawBtn.addEventListener("click", () => show("raw"));
+    originalBtn.addEventListener("click", () => show("original"));
+
     switcher.appendChild(renderedBtn);
+    switcher.appendChild(rawBtn);
+    switcher.appendChild(originalBtn);
 
     document.body.innerHTML = "";
     document.body.className = "md-viewer-active";
     document.body.appendChild(switcher);
     document.body.appendChild(container);
     document.body.appendChild(rawPre);
+    document.body.appendChild(original);
+
+    show("rendered");
   }
 
   window.__mdViewerApply = run;
